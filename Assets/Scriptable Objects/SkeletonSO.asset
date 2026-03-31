@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 055ce3a2021e96a4ca02bd47d4c273f6, type: 3}
+  m_Name: SkeletonSO
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySO
+  enemyName: Skeleton
+  enemyHealth: 100
+  enemyDamageAmount: 20
+  damagePopupPrefab: {fileID: 5276106432326900416, guid: c59861098faa79a41837c2bc0bdd4281, type: 3}
