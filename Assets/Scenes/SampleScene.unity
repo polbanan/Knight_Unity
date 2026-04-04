@@ -1987,13 +1987,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 191221949675162084, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
-      propertyPath: m_AngularSpeed
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 191221949675162084, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
-      propertyPath: m_StoppingDistance
-      value: 2
+    - target: {fileID: 301905076451884370, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
+      propertyPath: moveRadius
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 301905076451884370, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
       propertyPath: _stardingState
@@ -2062,6 +2058,14 @@ PrefabInstance:
     - target: {fileID: 3624891995917063254, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6368433528294481032, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7129617709120563095, guid: 97e986634ce30c347bcbdc7e3b62b798, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

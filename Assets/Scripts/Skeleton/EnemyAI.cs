@@ -2,6 +2,7 @@ using Knight.Utils;
 using System;
 using System.Collections;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,21 +13,22 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float _roamingDistanceMax = 7f;
     [SerializeField] private float _roamingDistanceMin = 3f;
     [SerializeField] private float _roamingTimeMax = 2f;
-    [SerializeField] private bool _isChasingEnemy = false;
     [SerializeField] private float _ChasingDistance = 8f;
-    [SerializeField] private float _attackingDistance = 3f;
-    [SerializeField] private bool _isAttacingEnemy = false;
+    [SerializeField] private float _attackingDistance = 1.5f;
     
     
     private bool _isReadyToChase = false;
     private float _ChasingSpeedMultiplay = 2f;
     private float _delayAttack = 1f;
     private float _lastAttackTime = 0f; 
-    private float _attackRate = 3f;
+    private float _attackRate = 1.5f;
     private bool _waitingBeforeChase = false;
     private bool _waitingAfterChase = false;
     private bool _waitingRoam = false;
     private float _radius = 15f;
+    public float moveRadius = 5f;
+    public Vector3 startPosition;
+    private bool _playerInsideZone = false;
 
 
     private NavMeshAgent _navMeshAgent;
@@ -73,7 +75,7 @@ public class EnemyAI : MonoBehaviour
         if(_player != null) 
             _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
 
-        _centerPosition = this.transform;
+        _centerPosition = transform;
         startPosition = transform.position;
     }
 
@@ -92,8 +94,7 @@ public class EnemyAI : MonoBehaviour
             transform.position = startPosition + fromStartToEnemy;
         }
     }
-    public float moveRadius = 5f;
-    public Vector3 startPosition; 
+    
 
     private void OnDrawGizmos()
     {
@@ -101,6 +102,7 @@ public class EnemyAI : MonoBehaviour
         Vector3 center = Application.isPlaying ? startPosition : transform.position;
         Gizmos.DrawWireSphere(center, moveRadius);
     }
+ 
 
     public void SetDeathState()
     {
@@ -140,7 +142,7 @@ public class EnemyAI : MonoBehaviour
     {
         _waitingRoam = true;
         _navMeshAgent.ResetPath();
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2.0f);
         Roaming();
         _roaminfTimer = _roamingTimeMax;
         _waitingRoam = false;
@@ -223,22 +225,20 @@ public class EnemyAI : MonoBehaviour
     {
         if (_player == null) return;
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+        float distanceToStartPosition = Vector3.Distance(startPosition, _playerTransform.position);
+        _playerInsideZone = (distanceToStartPosition <= moveRadius);
         State _newState = State.Roaming;
-        if (!_player.IsDead()) 
+        if (!_player.IsDead() && _playerInsideZone)
         {
             if (distanceToPlayer < _ChasingDistance)
             {
-                _isChasingEnemy = true;
-
                 if (distanceToPlayer < _attackingDistance)
                 {
                     _navMeshAgent.velocity = Vector3.zero;
-                    _isAttacingEnemy = true;
                     _newState = State.Attacking;
                 }
                 else
                 {
-                    _isAttacingEnemy = false;
 
                     if (!_waitingBeforeChase && !_isReadyToChase)
                     {
@@ -247,26 +247,16 @@ public class EnemyAI : MonoBehaviour
 
                     if (_isReadyToChase)
                     {
-                        _newState = State.Chasing; 
+                        _newState = State.Chasing;
                     }
                     else
                     {
-                        _newState = State.Roaming; 
+                        _newState = State.Roaming;
                     }
                 }
             }
-            else
-            {
-                _isChasingEnemy = false;
-                _isReadyToChase = false;
-            }
-
         }
-        else
-        {
-            _isAttacingEnemy = false;
-            _isChasingEnemy = false;
-        }
+        
         if (_newState != _currentState) {
             if (_newState == State.Chasing)
             {
@@ -321,7 +311,7 @@ public class EnemyAI : MonoBehaviour
 
     private void ChangeFacingDirectionByVelocity()
     {
-        if (Mathf.Abs(_navMeshAgent.velocity.x) > 0.01f)
+        if (Mathf.Abs(_navMeshAgent.velocity.x) > 0.001f)
         {
             float target = (_navMeshAgent.velocity.x < 0) ? 180f: 0f;
             transform.rotation = Quaternion.Euler(0f, target, 0f);
