@@ -8,8 +8,8 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    [SerializeField] private float _delayChase = 0.5f;
     [SerializeField] private State _stardingState;
+    [SerializeField] private float _delayChase = 0.5f;
     [SerializeField] private float _roamingDistanceMax = 7f;
     [SerializeField] private float _roamingDistanceMin = 3f;
     [SerializeField] private float _roamingTimeMax = 2f;
@@ -35,7 +35,7 @@ public class EnemyAI : MonoBehaviour
     private Transform _playerTransform;
     private Transform _centerPosition;
     private State _currentState;
-    private float _roaminfTimer;
+    private float _roamingTimer;
     private Vector3 _roamPosition;
     private float _roamingSpeed;
     private float _chasingSpeed;
@@ -81,6 +81,7 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
+        if (_currentState == State.Death) return;
         StateHandler();
         if (_currentState == State.Attacking || _currentState ==  State.Chasing)
             ChangeFacingDirectionByVelocity();
@@ -88,10 +89,14 @@ public class EnemyAI : MonoBehaviour
         float distance = Vector3.Distance(transform.position, startPosition);
         if (distance > moveRadius)
         {
-            // Вычисляем направление к врагу и "притягиваем" его обратно к границе
-            Vector3 fromStartToEnemy = transform.position - startPosition;
-            fromStartToEnemy = Vector3.ClampMagnitude(fromStartToEnemy, moveRadius);
-            transform.position = startPosition + fromStartToEnemy;
+            if (_navMeshAgent.hasPath)
+            {
+                _navMeshAgent.ResetPath();
+                _navMeshAgent.velocity = Vector3.zero;
+            }
+
+            Vector3 clamped = startPosition + Vector3.ClampMagnitude(transform.position - startPosition, moveRadius);
+            _navMeshAgent.Warp(clamped);
         }
     }
     
@@ -118,12 +123,11 @@ public class EnemyAI : MonoBehaviour
     private IEnumerator WaitBeforeChasing()
     {
         _waitingBeforeChase = true;
-        _isReadyToChase = false; // Начинаем ждать, бежать пока нельзя
+        _isReadyToChase = false; 
 
-        yield return new WaitForSeconds(_delayChase);
-
-        _isReadyToChase = true; // Время вышло, даем зеленый свет!
+        _isReadyToChase = true; 
         _waitingBeforeChase = false;
+        yield break;
     }
 
     private IEnumerator WaitBeforeAttacing()
@@ -144,7 +148,7 @@ public class EnemyAI : MonoBehaviour
         _navMeshAgent.ResetPath();
         yield return new WaitForSeconds(2.0f);
         Roaming();
-        _roaminfTimer = _roamingTimeMax;
+        _roamingTimer = _roamingTimeMax;
         _waitingRoam = false;
     }
 
@@ -167,8 +171,8 @@ public class EnemyAI : MonoBehaviour
                 transform.position = _centerPosition.position + clampefOffset;
                 if (!_waitingRoam)
                 {
-                    _roaminfTimer -= Time.deltaTime;    
-                    if (_roaminfTimer < 0)
+                    _roamingTimer -= Time.deltaTime;    
+                    if (_roamingTimer < 0)
                     {
                         StartCoroutine(WaitRoaming());
 
@@ -202,7 +206,13 @@ public class EnemyAI : MonoBehaviour
                 break;
             default:
             case State.Idle:
-                _currentState = State.Idle;
+                CheckCurrentState();
+
+                _roamingTimer -= Time.deltaTime;
+                if (_roamingTimer <= 0)
+                {
+                    _currentState = State.Roaming; 
+                }
                 break;
         }
 
@@ -220,6 +230,7 @@ public class EnemyAI : MonoBehaviour
     private void ChasingTarget() {         
         _navMeshAgent.SetDestination(_playerTransform.position);
     }
+
 
     private void CheckCurrentState()
     {
@@ -249,15 +260,16 @@ public class EnemyAI : MonoBehaviour
                     {
                         _newState = State.Chasing;
                     }
-                    else
-                    {
-                        _newState = State.Roaming;
-                    }
                 }
             }
         }
-        
-        if (_newState != _currentState) {
+
+        if (_newState != _currentState)
+        {
+            if (_newState == State.Idle)
+            {
+                _navMeshAgent.ResetPath();
+            }
             if (_newState == State.Chasing)
             {
                 _navMeshAgent.ResetPath(); // Чтобы сбросить путь который был до этого и не было рывков при смене состояния
@@ -277,12 +289,14 @@ public class EnemyAI : MonoBehaviour
             }
             else if (_newState == State.Roaming)
             {
-                _roaminfTimer = 0f; // 0f потому что у нас в состоянии Roaming в начале Update отнимается время и если оно меньше 0 то вызывается метод Roaming() и устанавливается таймер на максимум, а так как мы его обнуляем то в следущем кадре он будет меньше 0 и вызовется метод Roaming() и установится таймер на максимум, тем самым мы не будем ждать пока таймер закончится а сразу же начнем бродить
+                _roamingTimer = 0f; // 0f потому что у нас в состоянии Roaming в начале Update отнимается время и если оно меньше 0 то вызывается метод Roaming() и устанавливается таймер на максимум, а так как мы его обнуляем то в следущем кадре он будет меньше 0 и вызовется метод Roaming() и установится таймер на максимум, тем самым мы не будем ждать пока таймер закончится а сразу же начнем бродить
                 _navMeshAgent.speed = _roamingSpeed;
             }
             else if (_newState == State.Attacking)
             {
-                _navMeshAgent.ResetPath();
+                {
+                    _navMeshAgent.ResetPath();
+                }
             }
             _currentState = _newState;
         }
@@ -291,14 +305,13 @@ public class EnemyAI : MonoBehaviour
     {
         _roamPosition = GetRoamingPosition();
         _navMeshAgent.SetDestination(_roamPosition);
-
     }
 
     private Vector3 GetRoamingPosition()
     {
-        return transform.position + Utils.GetRandomDir() * UnityEngine.Random.Range(_roamingDistanceMin, _roamingDistanceMax);
+        return startPosition + Utils.GetRandomDir() * UnityEngine.Random.Range(_roamingDistanceMin, _roamingDistanceMax);
     }
-
+    
     private void LookAtPlayer()
     {
         float distanceToPlayer = _playerTransform.position.x - transform.position.x;
