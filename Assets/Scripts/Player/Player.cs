@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 
     [SerializeField] private PlayerSO _playerSO;
     [SerializeField] private float movingSpeed = 5f;
+    [SerializeField] private PlayerHealthUI _playerHealthUI;
 
     private bool _isDead = false;
     private int _currentHealth;
@@ -28,7 +29,7 @@ public class Player : MonoBehaviour
     {
         Instance = this;
         _rb = GetComponent<Rigidbody2D>();
-
+        
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         _originalColor = _spriteRenderer.color;
     }
@@ -70,6 +71,7 @@ public class Player : MonoBehaviour
         {
             Die();
         }
+        _playerHealthUI.TakeDamage(damage);
       
     }
     public bool IsDead()
