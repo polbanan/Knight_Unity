@@ -5,7 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider2D))]
 public class EnemyEntity : MonoBehaviour
 {
+    [SerializeField] private float _attackCooldown = 1.0f; 
     [SerializeField] private EnemySO _enemySO;
+    private float _lastAttackTime;
     private int _currentHealth;
     private int _damageAmount;
     private PolygonCollider2D _polygonCollider2D;
@@ -30,19 +32,19 @@ public class EnemyEntity : MonoBehaviour
         _damageAmount = _enemySO.enemyDamageAmount;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        if (collision.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
-            if (_polygonCollider2D.enabled)
+            // Проверяем, прошло ли достаточно времени с прошлого удара
+            if (Time.time - _lastAttackTime >= _attackCooldown)
             {
-                if (collision.TryGetComponent(out Player player))
+                Player player = other.GetComponent<Player>();
+                if (player != null)
                 {
-                    if (player.IsDead())
-                    {
-                        return;
-                    }
-                    player.TakeDamage(_damageAmount);
+                    player.TakeDamage(1);
+                    _lastAttackTime = Time.time; // Запоминаем время удара
                 }
             }
         }

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySO
   enemyName: Skeleton
   enemyHealth: 100
-  enemyDamageAmount: 20
+  enemyDamageAmount: 1
   damagePopupPrefab: {fileID: 5276106432326900416, guid: c59861098faa79a41837c2bc0bdd4281, type: 3}

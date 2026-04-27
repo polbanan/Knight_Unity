@@ -1,29 +1,28 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class PlayerHealthUI : MonoBehaviour
+public class PlayerHealthUI: MonoBehaviour
 {
-    public Image playerHealthBar;
-    public int maxHealth = 100;
+    [Header("Спрайты: от полной полоски до пустой")]
+    public Sprite[] healthSprites; 
+
+    private Image _uiImage;
     private int _currentHealth;
+    private int _maxHealth;
 
-    public void Start()
+    private void Awake()
     {
-       playerHealthBar.enabled = true;
-        _currentHealth = maxHealth;
-        UpdateHealthBar();
+        _uiImage = GetComponent<Image>();
+        _maxHealth = healthSprites.Length - 1;
+        _currentHealth = _maxHealth;
     }
 
-    public void TakeDamage(int damage)
+    public void UpdateHealthVisual(int currentHealth)
     {
-        _currentHealth -= damage;
-        _currentHealth = Mathf.Clamp(_currentHealth, 0, maxHealth);
-        UpdateHealthBar(); 
-    }
-    private void UpdateHealthBar()
-    {
-        playerHealthBar.fillAmount = (float)_currentHealth / maxHealth;
+        
+        int spriteIndex = _maxHealth - currentHealth;
+        spriteIndex = Mathf.Clamp(spriteIndex, 0, healthSprites.Length - 1);
+
+        _uiImage.sprite = healthSprites[spriteIndex];
     }
 }

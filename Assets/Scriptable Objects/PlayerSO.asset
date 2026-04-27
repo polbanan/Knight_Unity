@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37e68d97297bef04989ab295fba88b70, type: 3}
   m_Name: PlayerSO
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSO
-  health: 100
+  health: 4
   damagePopupPrefab: {fileID: 3889273577796284474, guid: c59861098faa79a41837c2bc0bdd4281, type: 3}

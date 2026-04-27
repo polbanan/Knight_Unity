@@ -56,23 +56,24 @@ public class Player : MonoBehaviour
         HandleMovement();
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage = 1)
     {
         if (_isDead) return;
 
-        _currentHealth -= damage;
+        _currentHealth -= 1;
         _currentHealth = Mathf.Max(_currentHealth, 0);
 
         StartCoroutine(FlashRoutine());
 
         OnTakeHit?.Invoke(this, EventArgs.Empty);
-        
+        Debug.Log("Урон пришел от: " + StackTraceUtility.ExtractStackTrace());
+        _playerHealthUI.UpdateHealthVisual(_currentHealth);
+
         if(_currentHealth <= 0)
         {
             Die();
         }
-        _playerHealthUI.TakeDamage(damage);
-      
+
     }
     public bool IsDead()
     {
